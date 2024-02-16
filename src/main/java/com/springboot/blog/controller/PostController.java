@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,11 @@ public class PostController {
 
     private PostService postService;
 
-    public PostController(PostService postService) {
+    private PasswordEncoder passwordEncoder;
+
+    public PostController(PostService postService,PasswordEncoder passwordEncoder) {
         this.postService = postService;
+        this.passwordEncoder = passwordEncoder;
     }
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,5 +55,9 @@ public class PostController {
         postService.deletePostById(id);
 
         return new ResponseEntity<>("Post entity deleted successfully.", HttpStatus.OK);
+    }
+    @GetMapping("/test")
+    public String test(){
+        return passwordEncoder.encode("test");
     }
 }
