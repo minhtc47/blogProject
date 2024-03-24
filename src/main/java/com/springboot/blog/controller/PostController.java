@@ -4,8 +4,11 @@ import com.springboot.blog.payload.PostDTO;
 import com.springboot.blog.payload.PostResponse;
 import com.springboot.blog.service.PostService;
 import com.springboot.blog.utils.AppConstants;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +19,15 @@ public class PostController {
 
     private PostService postService;
 
-    public PostController(PostService postService) {
+    private PasswordEncoder passwordEncoder;
+
+    public PostController(PostService postService,PasswordEncoder passwordEncoder) {
         this.postService = postService;
+        this.passwordEncoder = passwordEncoder;
     }
     @PostMapping
-    public ResponseEntity<PostDTO> createPost(@RequestBody PostDTO postDTO){
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostDTO postDTO){
         return new ResponseEntity<PostDTO>(postService.createPost(postDTO), HttpStatus.CREATED);
     }
     @GetMapping
@@ -37,14 +44,20 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostById(id));
     }
     @PutMapping("/{id}")
-    public ResponseEntity<PostDTO> updatePost(@RequestBody PostDTO postDTO, @PathVariable long id){
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PostDTO> updatePost(@Valid @RequestBody PostDTO postDTO, @PathVariable long id){
         return ResponseEntity.ok(postService.updatePost(postDTO,id));
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deletePost(@PathVariable(name = "id") long id){
 
         postService.deletePostById(id);
 
         return new ResponseEntity<>("Post entity deleted successfully.", HttpStatus.OK);
+    }
+    @GetMapping("/test")
+    public String test(){
+        return passwordEncoder.encode("test");
     }
 }
